@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <script src="./static/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./static/bootstrap.min.css" />
+    <link rel="stylesheet" href="./static/components.css" />
+    <link rel="stylesheet" href="./static/login.css" />
+
+    <title>Create Item</title>
+</head>
+<body class="login">
+    
+    <div class="content">
+        <h3 class="form-title">Create An Item</h3>
+        <section class="form-group">
+            <label class="control-label" for="title">Product Name: </label>
+            <input class="form-control" type="text" id="title" name="title"/>
+            <br/>
+            
+            <label class="control-label" for="description">Item Description: </label>
+            <input class="form-control" type="text" id="description" name="description" />
+            <br />
+
+            <label class="control-label" for="price">Price: </label>
+            <input class="form-control" type="text" id="price" name="price"/>
+            <br />
+
+            <label class="control-label" for="imgUrl">Item Image: </label>
+            <input class="form-control" type="text" id="imgUrl" name="imgUrl" />
+            <br />
+
+            <label class="control-label" for="inventory">Inventory: </label>
+            <input class="form-control" type="text" id="inventory" name="inventory"/>
+            <br />
+
+            <section class="form-actions">
+                <button class="btn blue" id="create" type="submit">Create Item</button>
+            </section>
+        </section>
+    </div>
+
+
+</body>
+
+<script>
+    jQuery(document).ready(() => {
+        
+
+        $("#create").on("click", () => {
+            let title = $("#title").val();
+            let description = $("#description").val();
+            let price = $("#price").val();
+            let imgUrl = $("#imgUrl").val();
+            let inventory = $("#inventory").val();
+
+            if (title === null || title === ""){
+                alert("Product name cannot be empty");
+                return false;
+            }
+            if (description === null || description === "") {
+                alert("Item description cannot be empty");
+                return false;
+            }
+            if (price === null || price === "") {
+                alert("Price cannot be empty");
+                return false;
+            }
+            if (imgUrl === null || imgUrl === "") {
+                alert("URL cannot be empty");
+                return false;
+            }
+            if (inventory === null || inventory === "") {
+                alert("Inventory cannot be empty");
+                return false;
+            }
+
+            $.ajax({
+                type: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "http://localhost:8080/item/create",
+                data:{
+                    "title": title,
+                    "description": description,
+                    "price": price,
+                    "inventory": inventory,
+                    "imgUrl": imgUrl
+                },
+                xhrFields: {
+                    withCredentials: true
+                },
+                success:(data) => {
+                    if (data.status === "success"){
+                        alert("Congratulations! You have created an item!");
+                    } else {
+                        alert("Operation failed, reason is " + data.data.errMsg);
+                    }
+                },
+                error:(data) => {
+                    alert("Operation failed, reason is " + data.responseText);
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</html>

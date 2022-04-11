@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <script src="./static/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./static/bootstrap.min.css" />
+    <link rel="stylesheet" href="./static/components.css" />
+    <link rel="stylesheet" href="./static/login.css" />
+
+    <title>Log In</title>
+</head>
+
+<body class="login">
+
+    <div class="content">
+        <h3 class="form-title">User Login</h3>
+        <section class="form-group">
+            <label class="control-label" for="mobile">Mobile Number: </label>
+            <input class="form-control" type="text" placeholder="(XXX)XXX-XXXX" id="mobile" name="mobile" />
+            <br />
+
+            <label class="control-label" for="password">Password: </label>
+            <input class="form-control" type="password" id="password" name="password" minlength="8" />
+            <br />
+
+            <section class="form-actions">
+                <button class="btn blue" id="login" type="submit">Log In</button>
+                <button class="btn green" id="register" type="submit">Join Us</button>
+            </section>
+        </section>
+    </div>
+
+
+</body>
+
+<script>
+    jQuery(document).ready(() => {
+
+        $("#register").on("click", () => {
+            window.location.href="file:///E:/SpringBoot%20Project/seckill/html/getotp.html";
+        });
+
+        $("#login").on("click", () => {
+            let mobile = $("#mobile").val();
+            let password = $("#password").val();
+
+            if (mobile === null || mobile === "") {
+                alert("Mobile cannot be empty");
+                return false;
+            }
+
+            if (password === null || password === "") {
+                alert("Password cannot be empty");
+                return false;
+            }
+
+
+            $.ajax({
+                type: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "http://localhost:8080/user/login",
+                data: {
+                    "mobile": mobile,
+                    "password": password
+                },
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: (data) => {
+                    if (data.status === "success") {
+                        alert("Log in successfully!");
+                        window.location.href="listitem.html";
+                    } else {
+                        alert("Login failed, reason is " + data.data.errMsg);
+                    }
+                },
+                error: (data) => {
+                    alert("Login failed, reason is " + data.responseText);
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <script src="./static/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./static/bootstrap.min.css" />
+    <link rel="stylesheet" href="./static/components.css" />
+    <link rel="stylesheet" href="./static/login.css" />
+
+    <title>Product Details</title>
+</head>
+<body class="login">
+    
+    <div class="content">
+        <h3 class="portlet-title bold">Product Description</h3>
+
+        <section class="center-block" id="promoStartContainer" style="margin-bottom: 3rem;">
+            <label class="text-danger bold" id="promoDateLabel">Upcoming Promotion in: </label>
+            <label class="text-danger" id="promoStartDate"></label>
+            <br />
+        </section>
+
+        <section class="form-group">
+            <label class="portlet-title bold" id="title"  style="font-size: 1.5rem;"></label>
+            <br />
+
+            
+            <label class="label-icon">Item Description: </label>
+            <label class="text-primary" id="description"></label>
+            <br />
+
+            <section id="normalPriceContainer">
+                <label class="label-icon">Price: </label>
+                <label class="text-primary" id="price"></label>
+                <br />
+            </section>
+            
+            <section id="promoPriceContainer">
+                <label class="text-danger bold">Promotion Price: </label>
+                <label class="text-danger" id="promoPrice"></label>
+                <br />
+            </section>
+
+            <label class="label-icon">Inventory: </label>
+            <label class="text-primary" id="inventory"></label>
+            <br />
+
+            
+            <label class="label-icon">Sales: </label>
+            <label class="text-primary" id="sales"></label>
+            <br />
+
+            <img style="width : 200px; height: auto; display: block; margin: auto;" alt="" id="imgUrl" />
+            <br />
+
+            <section class="form-actions">
+                <button class="btn blue" id="createorder" type="submit">Buy It!</button>
+            </section>
+
+        </section>
+    </div>
+
+
+</body>
+
+<script>
+
+    let params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
+
+    let g_itemVO = {};
+
+    jQuery(document).ready(() => {
+
+        //order the item
+        $('#createorder').on('click', function(){
+            $.ajax({
+                type: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "http://localhost:8080/order/createorder",
+                data: {
+                    "itemId": g_itemVO.id,
+                    "amount": 1,
+                    "promoId": g_itemVO.promoId
+                },
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: (data) => {
+                    if (data.status === "success") {
+                        alert("Order completed!");
+                        window.location.reload();
+                    } else {
+                        alert("Order failed, reason is " + data.data.errMsg);
+                        if (data.data.errCode === 20003){
+                            window.location.href="login.html";
+                        }
+                    }
+                },
+                error: (data) => {
+                    alert("Order failed, reason is " + data.responseText);
+                }
+            });
+        });
+
+        //get item detail
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/item/get",
+            data:{
+                "id": params.id
+            },
+            xhrFields: {
+                withCredentials: true
+            },
+            success:(data) => {
+                if (data.status === "success"){
+                    // alert("Congratulations! You have created an item!");
+                    // alert("the id is" + params.id);
+                    g_itemVO = data.data;
+                    reloadDom();
+                    setInterval(reloadDom, 1000);
+                } else {
+                    alert("Operation failed, reason is " + data.data.errMsg);
+                }
+            },
+            error:(data) => {
+                alert("Operation failed, reason is " + data.responseText);
+            }
+        });
+        return false;
+    });
+
+    function reloadDom(){
+        $("#title").text(g_itemVO.title);
+        $("#description").text(g_itemVO.description);
+        $("#price").text(g_itemVO.price);
+        $("#inventory").text(g_itemVO.inventory);
+        $("#sales").text(g_itemVO.sales);
+        $("#imgUrl").attr("src", g_itemVO.imgUrl);
+
+        if(g_itemVO.promoStatus === 1){
+            //upcoming promo
+            let startTime = g_itemVO.startDate.replace(new RegExp("-", "gm"), "/");
+            startTime = new Date(startTime).getTime();
+            let nowTime = Date.parse(new Date());
+            let delta = (startTime - nowTime)/1000;
+
+            if (delta <= 0){
+                //start
+                g_itemVO.promoStatus = 2;
+                reloadDom();
+            }
+
+            $("#promoStartDate").text(delta + " seconds");
+            $("#promoPrice").text(g_itemVO.promoPrice);
+            
+            $("#createorder").attr("disabled", true);
+        } else if ( g_itemVO.promoStatus === 2) {
+            //ongoing promo
+            $("#promoStartDate").text("Promotion is ongoing!!");
+            $("#promoPrice").text(g_itemVO.promoPrice);
+
+            $("#createorder").attr("disabled", false);
+            $("#normalPriceContainer").hide();
+            $("#promoDateLabel").hide();
+        }
+
+
+    }
+
+</script>
+
+</html>

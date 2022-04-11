@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <script src="./static/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./static/bootstrap.min.css" />
+    <link rel="stylesheet" href="./static/components.css" />
+    <link rel="stylesheet" href="./static/login.css" />
+
+    <title>Product List</title>
+</head>
+<body>
+    
+    <div class="content">
+        <h3 class="form-title">Products</h3>
+        <section class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Product Image</th>
+                        <th>Product Description</th>
+                        <th>Product Price</th>
+                        <th>Product Inventory</th>
+                        <th>Product Sales</th>
+                    </tr>
+                </thead>
+                <tbody id="itemContainer">
+
+
+
+
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+
+<script>
+
+    //global item object
+    let g_itemList = [];
+
+    jQuery(document).ready(() => {
+
+
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/item/list",
+
+                xhrFields: {
+                    withCredentials: true
+                },
+                success:(data) => {
+                    if (data.status === "success"){
+                        g_itemList = data.data;
+                        reloadDom();
+                        // alert("List created");
+                    } else {
+                        alert("Operation failed, reason is " + data.data.errMsg);
+                    }
+                },
+                error:(data) => {
+                    alert("Operation failed, reason is " + data.responseText);
+                }
+            });
+    });
+
+    function reloadDom() {
+
+        for (let i = 0; i < g_itemList.length; i++) {
+
+            let itemVO = g_itemList[i];
+            let dom = "<tr data-id='" + itemVO.id + "' id='itemDetail"+ itemVO.id + "'><td>" + itemVO.title
+                    + "</td><td><img style='width:100px; height:auto;' src='" + itemVO.imgUrl 
+                    + "'/></td><td>" + itemVO.description
+                    + "</td><td>" + itemVO.price
+                    + "</td><td>" + itemVO.inventory
+                    + "</td><td>" + itemVO.sales + "</td></tr>";
+            
+            //append to table
+            $("#itemContainer").append($(dom));
+
+            $("#itemDetail" + itemVO.id).on("click", function(){
+                // alert($(this).data("id"));
+                window.location.href="getitem.html?id=" + $(this).data("id");
+            });
+        }
+        
+    }
+
+</script>
+
+</html>
